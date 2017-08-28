@@ -3,7 +3,7 @@ AI for computer guesses
 
 The computer guess function is a relatively simplistic, brute-force algorithm, with very little optimization. It occurs in discrete phases, with multiple steps within each phase. Only the previous guess and result are directly considered, so it is entirely possible that the computer will make the same guess twice. It also ignores probability, though it does keep a count of how many times a digit has shown up as "possible", leaving a hook for future enhancement.
 
-##Terminology
+## Terminology
 
 * *Bull:* A correct character in the right position
 * *Cow:* A character that is in the answer, but is in the wrong position
@@ -13,13 +13,13 @@ The computer guess function is a relatively simplistic, brute-force algorithm, w
 * *Field:* A Guess that has at least 1 Bovine.
 * *Pasture:* A Guess that has 1 Bovine, if needed. (If Pen + Field have 4, the Pasture is not used)
 
-##Phase overview
+## Phase overview
 
 * *Phase 1:* Use a hardcoded list of initial guesses to come up with two or three guesses, which in total have four Bovines.
 * *Phase 2:* Swap digits between these guesses until we identify four Bovines.
 * *Phase 3:* Swap the Bovines around until we have four Bulls, and win.
 
-#Phase 1: Hardcoded Sequences
+# Phase 1: Hardcoded Sequences
 
 The first 16 guesses come from a hardcoded table, similar to a set of hardcoded opening gambits in a chess game. These will serve to weed out one or more sets of digits as consisting entirely of Goats. Each series of four guesses comes from picking the fifth digit from the series before.
 
@@ -32,7 +32,7 @@ After set 0 has been processed, we may or may not have some known Goats. Any Goa
 
 Continue until we are down to two or three guesses, which total four Bovines. At least one of these (the Pen) will have two (or three) Bovines.
 
-##Number Array
+## Number Array
 
 In this phase, we will be looking at whether a digit has a chance of being in the final answer. This is done using an array of 16 values, corresponding to the hex digits 0-F.
 
@@ -40,7 +40,7 @@ Each time a digit is a Bovine (a possible cow or bull), its array element will b
 
 If a digit is found to be a Goat, though, its array element is set to -1 and it will no longer be considered.
 
-##Examples
+## Examples
 
 ###Typical example
 We end up with a Pen, a Field, and a Pasture
@@ -71,7 +71,7 @@ Answer: 3601
 
 At this point, Pen + Field + Pasture = 4 Bovines. Go to Phase 2.
 
-###Worst-case example
+### Worst-case example
 
 If a guess straddles all four possible guesses in a set, we have to try the next set. (That's the reason for the hardcoded sets.)
 
@@ -99,7 +99,7 @@ At this point, we have to change to the next set. We clear out the Pen, Field, a
 
 At this point, Pen + Field + Pasture = 4 Bovines. Go to Phase 2.
 
-##Notes
+## Notes
 
 * Marking Goats does not seem to be needed in the current technique. If we have a set that is all Goats, we will have 4 Bovines in the other three Guesses. But the code is still present because it might be helpful in the future.
 
@@ -109,7 +109,7 @@ At this point, Pen + Field + Pasture = 4 Bovines. Go to Phase 2.
 
 * Once we were forced to accept this limitation, Phase 2 actually became less complex. It iterates a simplified process instead of handling a half-dozen modes.
 
-#Phase 2: Swap between Pen and Field
+# Phase 2: Swap between Pen and Field
 
 We have the Pen with at least 2 Bovines, and the Field with at least 1 Bovine. We will swap digits from the Field to the Pen until we know that all the digits in the Field are Goats. Every time we swap digits and the Bovine count in the Pen changes, we learn something about the digits we swapped.
 
@@ -117,7 +117,7 @@ If we end up with a Pen containing 3 Bovines and a Field of 4 Goats, we will swa
 
 Phase 2 uses an array of 16 values, corresponding to the hex digits 0-F. Each element starts out as 0, indicating the digit's status is Unknown. If we determine a digit is a Bovine, its element is set to 1; if it's a Goat, set it to -1.
 
-###Initialize
+### Initialize
 
 When we first enter Phase 2 from Phase 1, we save the number of Bovines in the Pen as the "previous guess count". This will let us see if swapping digits between the Pen and the Field increases the Bovines, decreases them, or leaves them the same.
 
@@ -125,7 +125,7 @@ We also save the number of Bovines in the Field (could be 1 or 2). We don't know
 
 We want to swap the first unknown Digit in the Pen with the first unknown Digit in the Field. This will change later (see "Result: Bovines remain the same"). But for now, set the "which unknown in Field" value to 0 (first unknown in Field).
 
-###Swap
+### Swap
 
 On every turn in Phase 2, we look through the Pen for the first unknown digit using the status array. (Known digits in the Pen will always be Bovines.)
 
@@ -143,7 +143,7 @@ For example, using Answer: 75C0
 
 The first unknown digit of the Pen is 4, the first unknown digit of the Field is 0. We will update the Pen to 0567 and submit it as our guess. The field will contain 4123.
 
-###Result: Bovines Increase
+### Result: Bovines Increase
 
 If the number of Bovines increases, then the digit we swapped from the Field to the Pen is a Bovine. And the digit we swapped from the Pen to the Field is a Goat.
 
@@ -157,7 +157,7 @@ Also, reset the "which unknown in Field" value back to 0 (first unknown in Field
 
 Go to the Swap routine to generate our next guess. Note that we have marked some digits as known Bovines/Goats, so we'll be swapping the next unknown digit.
 
-###Result: Bovines Decrease
+### Result: Bovines Decrease
 
 If the number of Bovines decreases, then it's just the opposite of what happened on an increase. The digit we swapped from the Field to the Pen is a Goat, and the digit we swapped from the Pen to the Field is a Bovine.
 
@@ -167,7 +167,7 @@ Don't update the "previous guess count" to reflect the decrease. We swapped the 
 
 Go to the Swap routine to generate our next guess. Again, we have marked some digits as known Bovines/Goats. Even when a guess generates a negative result, we learn something.
 
-###Result: Bovines remain the same
+### Result: Bovines remain the same
 
 If the number of Bovines remains the same, then the digits we swapped are the same type - they're both Bovines, or they're both Goats.
 
@@ -179,17 +179,17 @@ Go to the Swap routine to generate our next guess. We have the same unknowns as 
 
 (Note: we don't bother swapping the digits back to their original positions, like we did when Bovines decreased.)
 
-##Notes
+## Notes
 
 * The original design for this Phase involved 5 phases (plus setup), and expected a Pen with 3 Bovines (and a Field with 1 Bovine). That design fell apart when it turned out we couldn't guarantee coming in with 3 Bovines.
 
 * This algorithm evolved by starting with the increase/decrease cases, and then coming up with an iterative method to find a digit in the Field that didn't match.
 
-#Phase 3: Arrange Cows to find Bulls
+# Phase 3: Arrange Cows to find Bulls
 
 This phase involves swapping pairs of digits within the Pen, and choosing the next swap based on the result.
 
-###Swappable pairs
+### Swappable pairs
 
 This phase has four modes, corresponding to the pairs of digits that can be swapped.
 
@@ -200,7 +200,7 @@ Example guess: ABCD
 * Mode 2: Swap C-D
 * Mode 3: Swap D-A
 
-###Initialization
+### Initialization
 
 When Phase 3 starts, the Mode is set to -1 to indicate that we are either just entering this mode, or we are re-initializing after reordering the guess (see "Bulls stay the same").
 
@@ -208,7 +208,7 @@ Initialization sets Mode to 0, and sets the "last Bulls count" to the current nu
 
 Swap the digits indicated by Mode 0 to generate the new Guess. 
 
-###Bulls increase by 2
+### Bulls increase by 2
 
 This means that the digits we swapped are both now Bulls. Set our new "last Bulls count".
 
@@ -218,7 +218,7 @@ To do this, increase the Mode by 2. Take the modulo 4 result (mask with 0x03) an
 
 Swap the digits indicated by the new Mode to generate the new Guess. 
 
-###Bulls increase by 1
+### Bulls increase by 1
 
 We don't know which of the digits we swapped became a Bull, but one of them did. Set our new "last Bulls count".
 
@@ -228,7 +228,7 @@ To do this, increase the Mode by 1 (and mask with 0x03).
 
 Swap the digits indicated by the new Mode to generate the new Guess. 
 
-###Bulls decrease by 1
+### Bulls decrease by 1
 
 We don't know which of the digits we swapped was originally a Bull, but one of them was.
 
@@ -240,7 +240,7 @@ To do this, increase the Mode by 1 (and mask with 0x03).
 
 Swap the digits indicated by the new Mode to generate the new Guess. 
 
-###Bulls decrease by 2
+### Bulls decrease by 2
 
 This means that the digits we swapped were originally Bulls.
 
@@ -252,7 +252,7 @@ To do this, increase the Mode by 2 (and mask with 0x03).
 
 Swap the digits indicated by the new Mode to generate the new Guess. 
 
-###Bulls stay the same
+### Bulls stay the same
 
 This means that the digits we swapped were not Bulls before and they're not Bulls now. They belong in the other two positions of the guess.
 
@@ -262,7 +262,7 @@ Reset the Mode to -1 to indicate that we need to start from scratch after this g
 
 Submit the new guess.
 
-##Notes
+## Notes
 
 * The algorithm may lose some efficiency because it does not track the status of individual digits. It does not have any sense of probability based on the number of times a digit was involved in a guess containing Bulls.
 

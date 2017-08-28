@@ -42,7 +42,7 @@ If a digit is found to be a Goat, though, its array element is set to -1 and it 
 
 ## Examples
 
-###Typical example
+### Typical example
 We end up with a Pen, a Field, and a Pasture
 
 Answer: 75C0
@@ -58,7 +58,7 @@ Answer: 75C0
 
 At this point, Pen + Field + Pasture = 4 Bovines. Go to Phase 2.
 
-###Best-case example
+### Best-case example
 
 Since we have 3 Bovines in the Pen, we only have a Pen and a Field. We might also have 2 in the Pen and 2 in the Field.
 
